@@ -4,6 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
       ca-certificates \
@@ -16,6 +17,7 @@ RUN apt-get update \
 WORKDIR /workspace
 
 COPY requirements.txt requirements-dev.txt ./
+# hadolint ignore=DL3013
 RUN python -m pip install --upgrade pip \
     && python -m pip install -r requirements.txt -r requirements-dev.txt
 
@@ -24,4 +26,3 @@ USER runner
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["./scripts/run-check.sh"]
-
