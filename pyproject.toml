@@ -8,7 +8,9 @@ version = "0.1.0"
 description = "Agentless VM health reports with Ansible, Podman, Python, and email."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+  "ansible-core>=2.19,<2.22",
+]
 
 [dependency-groups]
 dev = [
