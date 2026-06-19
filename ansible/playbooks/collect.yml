@@ -1,0 +1,31 @@
+---
+- name: Collect FleetLens VM health data
+  hosts: vms
+  gather_facts: true
+  ignore_unreachable: true
+  roles:
+    - role: vm_healthcheck
+
+- name: Write FleetLens raw report
+  hosts: localhost
+  gather_facts: false
+  vars:
+    fleetlens_hosts: >-
+      {{
+        groups.get('vms', [])
+        | map('extract', hostvars, 'vm_healthcheck_result')
+        | select('defined')
+        | list
+      }}
+  tasks:
+    - name: Ensure report directory exists
+      ansible.builtin.file:
+        path: "{{ vm_healthcheck_report_dir | default('reports') }}"
+        state: directory
+        mode: "0755"
+
+    - name: Write raw JSON report
+      ansible.builtin.copy:
+        dest: "{{ vm_healthcheck_report_dir | default('reports') }}/raw-ansible.json"
+        mode: "0644"
+        content: "{{ {'hosts': fleetlens_hosts} | to_nice_json }}\n"

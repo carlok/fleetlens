@@ -1,0 +1,53 @@
+---
+- name: Optionally refresh apt metadata
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  become: true
+  when: vm_healthcheck_refresh_apt_cache | bool
+
+- name: Collect apt information
+  ansible.builtin.include_tasks: apt.yml
+
+- name: Collect disk information
+  ansible.builtin.include_tasks: disk.yml
+
+- name: Collect memory information
+  ansible.builtin.include_tasks: memory.yml
+
+- name: Collect systemd information
+  ansible.builtin.include_tasks: systemd.yml
+
+- name: Collect journal information
+  ansible.builtin.include_tasks: journal.yml
+  when: vm_healthcheck_journal_errors_enabled | bool
+
+- name: Collect reboot information
+  ansible.builtin.include_tasks: reboot.yml
+
+- name: Collect needrestart information
+  ansible.builtin.include_tasks: needrestart.yml
+  when: vm_healthcheck_needrestart_enabled | bool
+
+- name: Build FleetLens host result
+  ansible.builtin.set_fact:
+    vm_healthcheck_result:
+      host: "{{ inventory_hostname }}"
+      reachable: true
+      sudo_ok: true
+      hostname: "{{ ansible_hostname | default(inventory_hostname) }}"
+      os: "{{ ansible_distribution | default('unknown') }} {{ ansible_distribution_version | default('') }}"
+      kernel: "{{ ansible_kernel | default('unknown') }}"
+      uptime: "{{ vm_healthcheck_uptime.stdout | default('unknown') }}"
+      load_average: "{{ vm_healthcheck_load.stdout | default('unknown') }}"
+      memory: "{{ vm_healthcheck_memory | default({}) }}"
+      disk:
+        filesystems: "{{ vm_healthcheck_disks | default([]) }}"
+      apt: "{{ vm_healthcheck_apt | default({}) }}"
+      reboot_required: "{{ vm_healthcheck_reboot_required | default(false) }}"
+      systemd: "{{ vm_healthcheck_systemd | default({}) }}"
+      journal: "{{ vm_healthcheck_journal | default({}) }}"
+      needrestart: "{{ vm_healthcheck_needrestart | default({}) }}"
+      notes: []
+      errors: []
+      collected_at: "{{ ansible_date_time.iso8601 | default('unknown') }}"

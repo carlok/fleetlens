@@ -1,0 +1,26 @@
+---
+- name: Collect memory usage
+  ansible.builtin.command: free -m
+  register: vm_healthcheck_free
+  changed_when: false
+  failed_when: false
+
+- name: Collect uptime
+  ansible.builtin.command: uptime -p
+  register: vm_healthcheck_uptime
+  changed_when: false
+  failed_when: false
+
+- name: Collect load average
+  ansible.builtin.command: sh -c "cat /proc/loadavg"
+  register: vm_healthcheck_load
+  changed_when: false
+  failed_when: false
+
+- name: Store memory facts
+  ansible.builtin.set_fact:
+    vm_healthcheck_memory:
+      total_mb: "{{ ansible_memtotal_mb | default(0) }}"
+      free_mb: "{{ ansible_memfree_mb | default(0) }}"
+      used_mb: "{{ (ansible_memtotal_mb | default(0) | int) - (ansible_memfree_mb | default(0) | int) }}"
+      raw: "{{ vm_healthcheck_free.stdout | default('') }}"

@@ -1,0 +1,22 @@
+{
+  "hosts": [
+    {
+      "host": "vm1",
+      "reachable": true,
+      "sudo_ok": true,
+      "os": "Ubuntu 24.04",
+      "kernel": "6.8.0",
+      "uptime": "up 3 days",
+      "load_average": "0.01 0.02 0.03 1/100 1234",
+      "memory": {"total_mb": 1024, "used_mb": 512},
+      "disk": {"filesystems": [{"mount": "/", "used_percent": 58, "status": "OK"}]},
+      "apt": {"upgradable_count": 0, "security_updates_count": 0},
+      "reboot_required": false,
+      "systemd": {"failed_count": 0},
+      "journal": {"error_count": 0},
+      "notes": [],
+      "errors": []
+    }
+  ]
+}
+

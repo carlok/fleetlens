@@ -1,0 +1,66 @@
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+known_hosts
+secrets/
+private/
+local/
+
+# Local inventories and overrides
+ansible/inventories/local/
+ansible/inventories/private/
+ansible/**/*.retry
+compose.override.yaml
+compose.override.yml
+docker-compose.override.yaml
+docker-compose.override.yml
+
+# Runtime output
+reports/*
+!reports/.gitkeep
+logs/*
+!logs/.gitkeep
+tmp/
+.cache/
+.ansible/
+
+# Podman/compose mounted state
+.volumes/
+.podman/
+podman-data/
+compose-data/
+ara-data/
+semaphore-data/
+healthchecks-data/
+ntfy-data/
+gotify-data/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+
+# Editors and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+

@@ -1,0 +1,2 @@
+---
+vm_healthcheck_target_family: apt

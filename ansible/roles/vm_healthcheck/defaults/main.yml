@@ -1,0 +1,8 @@
+---
+vm_healthcheck_refresh_apt_cache: false
+vm_healthcheck_disk_warning_percent: 85
+vm_healthcheck_disk_critical_percent: 95
+vm_healthcheck_journal_errors_enabled: false
+vm_healthcheck_journal_since: "24 hours ago"
+vm_healthcheck_needrestart_enabled: true
+vm_healthcheck_checkrestart_enabled: true

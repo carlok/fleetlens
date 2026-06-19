@@ -1,0 +1,20 @@
+---
+- name: List upgradable apt packages
+  ansible.builtin.command: apt list --upgradable
+  register: vm_healthcheck_apt_list
+  changed_when: false
+  failed_when: false
+
+- name: Simulate apt upgrade # noqa: command-instead-of-module
+  ansible.builtin.command: apt-get -s upgrade
+  register: vm_healthcheck_apt_simulation
+  changed_when: false
+  failed_when: false
+
+- name: Store apt facts
+  ansible.builtin.set_fact:
+    vm_healthcheck_apt:
+      upgradable_count: "{{ (vm_healthcheck_apt_list.stdout_lines | default([]) | reject('match', '^Listing') | list | length) }}"
+      security_updates_count: "{{ (vm_healthcheck_apt_list.stdout_lines | default([]) | select('search', 'security') | list | length) }}"
+      apt_list_rc: "{{ vm_healthcheck_apt_list.rc }}"
+      simulation_rc: "{{ vm_healthcheck_apt_simulation.rc }}"

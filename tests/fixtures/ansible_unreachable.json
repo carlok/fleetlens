@@ -1,0 +1,15 @@
+{
+  "hosts": [
+    {
+      "host": "vm2",
+      "reachable": false,
+      "sudo_ok": false,
+      "apt": {},
+      "disk": {"filesystems": []},
+      "systemd": {},
+      "notes": [],
+      "errors": ["ssh timeout"]
+    }
+  ]
+}
+

@@ -1,0 +1,27 @@
+{
+  "hosts": [
+    {
+      "host": "vm1",
+      "reachable": true,
+      "sudo_ok": true,
+      "disk": {"filesystems": [{"mount": "/", "used_percent": 87, "status": "WARNING"}]},
+      "apt": {"upgradable_count": 12, "security_updates_count": 3},
+      "reboot_required": true,
+      "systemd": {"failed_count": 0},
+      "journal": {"error_count": 0},
+      "notes": [],
+      "errors": []
+    },
+    {
+      "host": "vm2",
+      "reachable": false,
+      "sudo_ok": false,
+      "disk": {"filesystems": []},
+      "apt": {},
+      "systemd": {},
+      "notes": [],
+      "errors": ["ssh timeout"]
+    }
+  ]
+}
+

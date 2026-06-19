@@ -1,0 +1,13 @@
+---
+- name: Collect failed systemd units # noqa: command-instead-of-module
+  ansible.builtin.command: systemctl --failed --no-legend --plain
+  register: vm_healthcheck_systemctl_failed
+  changed_when: false
+  failed_when: false
+
+- name: Store systemd facts
+  ansible.builtin.set_fact:
+    vm_healthcheck_systemd:
+      failed_count: "{{ vm_healthcheck_systemctl_failed.stdout_lines | default([]) | length }}"
+      failed_units: "{{ vm_healthcheck_systemctl_failed.stdout_lines | default([]) }}"
+      rc: "{{ vm_healthcheck_systemctl_failed.rc }}"

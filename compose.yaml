@@ -1,0 +1,55 @@
+services:
+  fleetlens-runner:
+    profiles: ["core"]
+    build:
+      context: .
+    image: fleetlens:local
+    working_dir: /workspace
+    env_file:
+      - .env
+    volumes:
+      - .:/workspace:Z
+      - ${HOME}/.ssh:/home/runner/.ssh:ro,Z
+    command: ./scripts/run-check.sh
+
+  ara:
+    profiles: ["ara"]
+    image: recordsansible/ara-api:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ara-data:/opt/ara:Z
+
+  semaphore:
+    profiles: ["semaphore"]
+    image: semaphoreui/semaphore:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./semaphore-data:/var/lib/semaphore:Z
+
+  healthchecks:
+    profiles: ["healthchecks"]
+    image: healthchecks/healthchecks:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./healthchecks-data:/data:Z
+
+  ntfy:
+    profiles: ["ntfy"]
+    image: binwiederhier/ntfy:latest
+    command: serve
+    ports:
+      - "8080:80"
+    volumes:
+      - ./ntfy-data:/var/lib/ntfy:Z
+
+  gotify:
+    profiles: ["gotify"]
+    image: gotify/server:latest
+    ports:
+      - "8081:80"
+    volumes:
+      - ./gotify-data:/app/data:Z
+

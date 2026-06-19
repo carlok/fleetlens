@@ -1,0 +1,7 @@
+---
+- name: FleetLens connectivity check
+  hosts: vms
+  gather_facts: false
+  tasks:
+    - name: Ping hosts
+      ansible.builtin.ping:

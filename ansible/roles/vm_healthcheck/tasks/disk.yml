@@ -1,0 +1,26 @@
+---
+- name: Collect disk usage
+  ansible.builtin.command: df -P -x tmpfs -x devtmpfs
+  register: vm_healthcheck_df
+  changed_when: false
+  failed_when: false
+
+- name: Build disk facts
+  ansible.builtin.set_fact:
+    vm_healthcheck_disks: "{{ vm_healthcheck_disks | default([]) + [disk_item] }}"
+  vars:
+    parts: "{{ item.split() }}"
+    used_percent: "{{ (parts[4] | regex_replace('%', '') | int) }}"
+    disk_item:
+      filesystem: "{{ parts[0] }}"
+      size: "{{ parts[1] }}"
+      used: "{{ parts[2] }}"
+      available: "{{ parts[3] }}"
+      used_percent: "{{ used_percent }}"
+      mount: "{{ parts[5] }}"
+      status: >-
+        {% if used_percent | int >= vm_healthcheck_disk_critical_percent | int %}CRITICAL
+        {% elif used_percent | int >= vm_healthcheck_disk_warning_percent | int %}WARNING
+        {% else %}OK{% endif %}
+  loop: "{{ vm_healthcheck_df.stdout_lines[1:] | default([]) }}"
+  when: item.split() | length >= 6

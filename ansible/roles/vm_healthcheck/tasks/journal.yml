@@ -1,0 +1,14 @@
+---
+- name: Collect recent journal errors
+  ansible.builtin.command: "journalctl -p err --since '{{ vm_healthcheck_journal_since }}' --no-pager"
+  register: vm_healthcheck_journal_errors
+  changed_when: false
+  failed_when: false
+
+- name: Store journal facts
+  ansible.builtin.set_fact:
+    vm_healthcheck_journal:
+      enabled: true
+      error_count: "{{ vm_healthcheck_journal_errors.stdout_lines | default([]) | length }}"
+      errors: "{{ vm_healthcheck_journal_errors.stdout_lines | default([]) }}"
+      rc: "{{ vm_healthcheck_journal_errors.rc }}"

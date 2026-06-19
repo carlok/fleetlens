@@ -1,0 +1,5 @@
+ansible-lint>=24
+coverage>=7
+pytest>=8
+ruff>=0.5
+
