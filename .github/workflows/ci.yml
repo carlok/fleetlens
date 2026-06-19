@@ -7,6 +7,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      ANSIBLE_CONFIG: ansible/ansible.cfg
+      ANSIBLE_HOME: .ansible
+      ANSIBLE_LOCAL_TEMP: .ansible/tmp
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,9 +28,6 @@ jobs:
         run: uv run coverage report
       - name: Ansible syntax
         run: |
-          export ANSIBLE_CONFIG=ansible/ansible.cfg
-          export ANSIBLE_HOME=.ansible
-          export ANSIBLE_LOCAL_TEMP=.ansible/tmp
           mkdir -p .ansible/tmp
           uv run ansible-playbook --syntax-check -i ansible/inventories/example/hosts.ini ansible/playbooks/ping.yml
           uv run ansible-playbook --syntax-check -i ansible/inventories/example/hosts.ini ansible/playbooks/collect.yml
