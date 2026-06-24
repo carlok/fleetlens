@@ -36,6 +36,15 @@ podman run --rm \
 
 Edit `ansible/inventories/example/hosts.ini` or copy it to an ignored local inventory directory and set `FLEETLENS_INVENTORY`.
 
+The example inventory starts in no-sudo mode:
+
+```ini
+[vms:vars]
+ansible_become=false
+```
+
+That is enough for the first read-only checks when apt cache refresh and journal errors are disabled. Enable sudo later only if you need privileged checks.
+
 ## Safety Model
 
 FleetLens does not remediate hosts. It gathers facts, checks apt metadata, inspects disk/memory/systemd/reboot indicators, and writes reports. `apt-get update` is disabled by default and controlled by Ansible variables.
@@ -87,4 +96,3 @@ python -m ruff check .
 ## Roadmap
 
 Future versions may add a read-only LLM summarizer that receives only structured reports, never SSH credentials, and never executes remediation.
-
