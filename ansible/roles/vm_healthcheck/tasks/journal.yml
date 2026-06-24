@@ -11,4 +11,4 @@
       enabled: true
       error_count: "{{ vm_healthcheck_journal_errors.stdout_lines | default([]) | length }}"
       errors: "{{ vm_healthcheck_journal_errors.stdout_lines | default([]) }}"
-      rc: "{{ vm_healthcheck_journal_errors.rc }}"
+      rc: "{{ vm_healthcheck_journal_errors.rc | default(1) }}"

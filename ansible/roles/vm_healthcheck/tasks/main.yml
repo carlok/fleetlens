@@ -33,7 +33,7 @@
   ansible.builtin.set_fact:
     vm_healthcheck_result:
       host: "{{ inventory_hostname }}"
-      reachable: true
+      reachable: "{{ not vm_healthcheck_host_unreachable }}"
       sudo_ok: true
       hostname: "{{ ansible_hostname | default(inventory_hostname) }}"
       os: "{{ ansible_distribution | default('unknown') }} {{ ansible_distribution_version | default('') }}"
@@ -49,5 +49,14 @@
       journal: "{{ vm_healthcheck_journal | default({}) }}"
       needrestart: "{{ vm_healthcheck_needrestart | default({}) }}"
       notes: []
-      errors: []
+      errors: "{{ ['host unreachable'] if vm_healthcheck_host_unreachable else [] }}"
       collected_at: "{{ ansible_date_time.iso8601 | default('unknown') }}"
+  vars:
+    vm_healthcheck_host_unreachable: >-
+      {{
+        vm_healthcheck_apt_list.unreachable | default(false)
+        or vm_healthcheck_apt_simulation.unreachable | default(false)
+        or vm_healthcheck_df.unreachable | default(false)
+        or vm_healthcheck_free.unreachable | default(false)
+        or vm_healthcheck_systemctl_failed.unreachable | default(false)
+      }}

@@ -10,7 +10,7 @@
   register: vm_healthcheck_needrestart_run
   changed_when: false
   failed_when: false
-  when: vm_healthcheck_needrestart_path.rc == 0
+  when: vm_healthcheck_needrestart_path.rc | default(1) == 0
 
 - name: Check checkrestart availability
   ansible.builtin.command: command -v checkrestart
@@ -26,12 +26,12 @@
   failed_when: false
   when:
     - vm_healthcheck_checkrestart_enabled | bool
-    - vm_healthcheck_checkrestart_path.rc == 0
+    - vm_healthcheck_checkrestart_path.rc | default(1) == 0
 
 - name: Store restart checker facts
   ansible.builtin.set_fact:
     vm_healthcheck_needrestart:
-      needrestart_installed: "{{ vm_healthcheck_needrestart_path.rc == 0 }}"
+      needrestart_installed: "{{ vm_healthcheck_needrestart_path.rc | default(1) == 0 }}"
       needrestart_output: "{{ vm_healthcheck_needrestart_run.stdout | default('') }}"
       checkrestart_installed: "{{ (vm_healthcheck_checkrestart_path.rc | default(1)) == 0 }}"
       checkrestart_output: "{{ vm_healthcheck_checkrestart_run.stdout | default('') }}"

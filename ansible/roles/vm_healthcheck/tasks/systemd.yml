@@ -10,4 +10,4 @@
     vm_healthcheck_systemd:
       failed_count: "{{ vm_healthcheck_systemctl_failed.stdout_lines | default([]) | length }}"
       failed_units: "{{ vm_healthcheck_systemctl_failed.stdout_lines | default([]) }}"
-      rc: "{{ vm_healthcheck_systemctl_failed.rc }}"
+      rc: "{{ vm_healthcheck_systemctl_failed.rc | default(1) }}"

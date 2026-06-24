@@ -10,6 +10,13 @@
   hosts: localhost
   gather_facts: false
   vars:
+    fleetlens_raw_report_path: "{{ lookup('env', 'FLEETLENS_RAW_REPORT') | default('reports/raw-ansible.json', true) }}"
+    fleetlens_raw_report_abs: >-
+      {{
+        fleetlens_raw_report_path
+        if fleetlens_raw_report_path.startswith('/')
+        else (playbook_dir ~ '/../..' ~ '/' ~ fleetlens_raw_report_path)
+      }}
     fleetlens_hosts: >-
       {{
         groups.get('vms', [])
@@ -20,12 +27,12 @@
   tasks:
     - name: Ensure report directory exists
       ansible.builtin.file:
-        path: "{{ vm_healthcheck_report_dir | default('reports') }}"
+        path: "{{ fleetlens_raw_report_abs | dirname }}"
         state: directory
         mode: "0755"
 
     - name: Write raw JSON report
       ansible.builtin.copy:
-        dest: "{{ vm_healthcheck_report_dir | default('reports') }}/raw-ansible.json"
+        dest: "{{ fleetlens_raw_report_abs }}"
         mode: "0644"
         content: "{{ {'hosts': fleetlens_hosts} | to_nice_json }}\n"

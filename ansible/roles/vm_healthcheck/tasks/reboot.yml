@@ -6,4 +6,4 @@
 
 - name: Store reboot facts
   ansible.builtin.set_fact:
-    vm_healthcheck_reboot_required: "{{ vm_healthcheck_reboot_stat.stat.exists | bool }}"
+    vm_healthcheck_reboot_required: "{{ vm_healthcheck_reboot_stat.stat.exists | default(false) | bool }}"

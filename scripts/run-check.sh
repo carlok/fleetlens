@@ -3,8 +3,8 @@ set -euo pipefail
 
 mkdir -p reports logs
 export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-ansible/ansible.cfg}"
-export ANSIBLE_HOME="${ANSIBLE_HOME:-.ansible}"
-export ANSIBLE_LOCAL_TEMP="${ANSIBLE_LOCAL_TEMP:-.ansible/tmp}"
+export ANSIBLE_HOME="${ANSIBLE_HOME:-/tmp/fleetlens-ansible}"
+export ANSIBLE_LOCAL_TEMP="${ANSIBLE_LOCAL_TEMP:-/tmp/fleetlens-ansible/tmp}"
 mkdir -p "${ANSIBLE_HOME}" "${ANSIBLE_LOCAL_TEMP}"
 
 ansible-playbook \

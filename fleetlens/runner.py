@@ -11,8 +11,8 @@ def run_ansible_collection(settings: Settings) -> None:
     if backend == "shell":
         env = os.environ.copy()
         env.setdefault("ANSIBLE_CONFIG", "ansible/ansible.cfg")
-        env.setdefault("ANSIBLE_HOME", ".ansible")
-        env.setdefault("ANSIBLE_LOCAL_TEMP", ".ansible/tmp")
+        env.setdefault("ANSIBLE_HOME", "/tmp/fleetlens-ansible")
+        env.setdefault("ANSIBLE_LOCAL_TEMP", "/tmp/fleetlens-ansible/tmp")
         subprocess.run(
             [
                 "ansible-playbook",

@@ -21,8 +21,12 @@ COPY requirements.txt requirements-dev.txt ./
 RUN python -m pip install --upgrade pip \
     && python -m pip install -r requirements.txt -r requirements-dev.txt
 
-RUN useradd --create-home --shell /bin/bash runner
-USER runner
+RUN mkdir -p /home/runner/.ssh
+
+# Rootless Podman maps container root to the invoking user outside the VM.
+# This keeps bind-mounted repo output and read-only SSH material usable.
+# hadolint ignore=DL3002
+USER root
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["./scripts/run-check.sh"]

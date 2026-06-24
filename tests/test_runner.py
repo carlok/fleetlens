@@ -21,8 +21,8 @@ def test_shell_runner_invokes_ansible(monkeypatch):
     ]
     assert check is True
     assert env["ANSIBLE_CONFIG"] == "ansible/ansible.cfg"
-    assert env["ANSIBLE_HOME"] == ".ansible"
-    assert env["ANSIBLE_LOCAL_TEMP"] == ".ansible/tmp"
+    assert env["ANSIBLE_HOME"] == "/tmp/fleetlens-ansible"
+    assert env["ANSIBLE_LOCAL_TEMP"] == "/tmp/fleetlens-ansible/tmp"
 
 
 def test_unknown_runner_backend_raises():
