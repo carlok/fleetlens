@@ -9,7 +9,12 @@ from fleetlens.config import load_settings
 from fleetlens.emailer import build_message, load_report, send_message
 from fleetlens.heartbeat import heartbeat_failure, heartbeat_start, heartbeat_success
 from fleetlens.parse_ansible import load_raw_report
-from fleetlens.render import render_markdown, write_json_report, write_markdown_report
+from fleetlens.render import (
+    render_markdown,
+    render_terminal_summary,
+    write_json_report,
+    write_markdown_report,
+)
 from fleetlens.runner import run_ansible_collection
 
 
@@ -51,6 +56,7 @@ def render_command(args: argparse.Namespace, settings) -> None:
     report = classify_fleet(load_raw_report(raw_path))
     write_json_report(report, json_path)
     write_markdown_report(report, markdown_path)
+    print(render_terminal_summary(report))
     print(f"{report.status.value}: wrote {json_path} and {markdown_path}")
 
 
@@ -90,6 +96,7 @@ def run_command(settings) -> None:
         )
         send_message(message, settings)
     heartbeat_success(settings)
+    print(render_terminal_summary(report))
     print(f"{report.status.value}: FleetLens run complete")
 
 

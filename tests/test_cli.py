@@ -39,6 +39,45 @@ def test_cli_render_writes_reports(tmp_path):
     assert markdown_out.read_text(encoding="utf-8").startswith("# FleetLens Report")
 
 
+def test_cli_render_prints_terminal_summary(tmp_path, capsys):
+    raw = tmp_path / "raw.json"
+    json_out = tmp_path / "latest.json"
+    markdown_out = tmp_path / "latest.md"
+    raw.write_text(
+        json.dumps(
+            {
+                "hosts": [
+                    {
+                        "host": "vm1",
+                        "reachable": True,
+                        "sudo_ok": True,
+                        "apt": {"upgradable_count": 2, "packages": ["openssl/jammy 3.0 amd64"]},
+                        "systemd": {"failed_count": 1},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert main(
+        [
+            "render",
+            "--input",
+            str(raw),
+            "--json-out",
+            str(json_out),
+            "--markdown-out",
+            str(markdown_out),
+        ]
+    ) == 0
+    output = capsys.readouterr().out
+    assert "Attention needed:" in output
+    assert "vm1: WARNING" in output
+    assert "updates available: 2 packages: openssl" in output
+    assert "failed systemd units: 1 unit" in output
+
+
 def test_cli_email_dry_run(tmp_path, capsys):
     json_report = tmp_path / "latest.json"
     markdown_report = tmp_path / "latest.md"

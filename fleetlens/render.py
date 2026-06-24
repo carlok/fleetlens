@@ -40,6 +40,71 @@ def render_markdown(report: FleetReport) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def render_terminal_summary(report: FleetReport) -> str:
+    lines = [f"FleetLens status: {report.status.value}"]
+    problem_hosts = [
+        host for host in report.hosts if host.errors or host.notes or host.status != "OK"
+    ]
+    if not problem_hosts:
+        lines.append("All scanned hosts are OK.")
+        return "\n".join(lines)
+
+    lines.append("Attention needed:")
+    for host in problem_hosts:
+        lines.append(f"- {host.host}: {host.status.value}")
+        for item in _host_terminal_findings(host):
+            lines.append(f"  - {item}")
+    return "\n".join(lines)
+
+
+def _host_terminal_findings(host: HostResult) -> list[str]:
+    findings: list[str] = []
+    if host.errors:
+        findings.extend(host.errors)
+
+    upgradable_count = int(host.apt.get("upgradable_count") or 0)
+    if upgradable_count:
+        packages = _package_names(host.apt.get("packages") or [])
+        package_text = f"{upgradable_count} package" + ("" if upgradable_count == 1 else "s")
+        if packages:
+            package_text += f": {', '.join(packages)}"
+        findings.append(f"updates available: {package_text}")
+
+    if host.reboot_required:
+        findings.append("reboot required")
+
+    failed_units = int(host.systemd.get("failed_count") or 0)
+    if failed_units:
+        findings.append(
+            f"failed systemd units: {failed_units} unit" + ("" if failed_units == 1 else "s")
+        )
+
+    journal_errors = int(host.journal.get("error_count") or 0)
+    if journal_errors:
+        findings.append(
+            f"journal errors: {journal_errors} line" + ("" if journal_errors == 1 else "s")
+        )
+
+    for filesystem in host.disk.get("filesystems", []):
+        status = str(filesystem.get("status", "")).upper()
+        if status not in {"WARNING", "CRITICAL"}:
+            continue
+        mount = filesystem.get("mount", filesystem.get("filesystem", "disk"))
+        used = filesystem.get("used_percent", "unknown")
+        findings.append(f"{mount} disk {status.lower()}: {used}% used")
+
+    if not findings and host.notes:
+        findings.extend(host.notes)
+    return findings or ["status needs review"]
+
+
+def _package_names(packages: list[str], limit: int = 5) -> list[str]:
+    names = [str(package).split("/", 1)[0] for package in packages]
+    if len(names) <= limit:
+        return names
+    return [*names[:limit], f"+{len(names) - limit} more"]
+
+
 def _summary_row(host: HostResult) -> str:
     return (
         f"| {host.host} | {host.status.value} | {_yes_no(host.reachable)} | "
