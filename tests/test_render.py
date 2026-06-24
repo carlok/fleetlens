@@ -14,6 +14,24 @@ def test_markdown_contains_summary():
     assert "| vm1 | OK |" in markdown
 
 
+def test_markdown_lists_package_updates():
+    report = classify_fleet(
+        [
+            HostResult(
+                host="vm1",
+                apt={
+                    "upgradable_count": 1,
+                    "packages": ["openssl/jammy-security 3.0 amd64 [upgradable from: 2.0]"],
+                },
+                systemd={"failed_count": 0},
+            )
+        ]
+    )
+    markdown = render_markdown(report)
+    assert "- Package updates:" in markdown
+    assert "`openssl/jammy-security 3.0 amd64 [upgradable from: 2.0]`" in markdown
+
+
 def test_write_reports(tmp_path):
     report = classify_fleet(
         [HostResult(host="vm1", apt={"upgradable_count": 0}, systemd={"failed_count": 0})]

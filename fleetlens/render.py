@@ -63,8 +63,13 @@ def _host_detail(host: HostResult) -> list[str]:
         f"- Security updates: {host.apt.get('security_updates_count', 'unknown')}",
         f"- Reboot required: {_yes_no(host.reboot_required)}",
         f"- Failed systemd units: {host.systemd.get('failed_count', 'unknown')}",
-        "- Disk:",
     ]
+    packages = host.apt.get("packages") or []
+    if packages:
+        lines.append("- Package updates:")
+        for package in packages:
+            lines.append(f"  - `{package}`")
+    lines.append("- Disk:")
     filesystems = host.disk.get("filesystems") or []
     if not filesystems:
         lines.append("  - unknown")
