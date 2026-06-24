@@ -11,5 +11,4 @@ FLEETLENS_HEARTBEAT_FAILURE_URL=
 
 Failure pings include a short diagnostic body when possible.
 
-You can use hosted Healthchecks.io or a self-hosted instance from the optional compose profile.
-
+Use hosted Healthchecks.io or any compatible endpoint you operate separately.

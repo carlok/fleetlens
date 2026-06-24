@@ -1,26 +1,15 @@
-IMAGE ?= fleetlens:local
-ENV_FILE ?= .env
+PYTHON ?= python3
 
-.PHONY: build run ping check render email-dry-run test coverage lint format clean
+.PHONY: bootstrap run ping check render email-dry-run test coverage lint format clean
 
-build:
-	podman build -t $(IMAGE) .
+bootstrap:
+	PYTHON=$(PYTHON) ./scripts/bootstrap.sh
 
 run:
-	podman run --rm \
-	  -v "$$PWD:/workspace:Z" \
-	  -v "$$HOME/.ssh:/home/runner/.ssh:ro,Z" \
-	  --env-file $(ENV_FILE) \
-	  $(IMAGE) \
-	  ./scripts/run-check.sh
+	./scripts/run-check.sh
 
 ping:
-	podman run --rm \
-	  -v "$$PWD:/workspace:Z" \
-	  -v "$$HOME/.ssh:/home/runner/.ssh:ro,Z" \
-	  --env-file $(ENV_FILE) \
-	  $(IMAGE) \
-	  ./scripts/run-ping.sh
+	./scripts/run-ping.sh
 
 check: lint test
 
@@ -45,4 +34,3 @@ format:
 
 clean:
 	rm -rf .pytest_cache .ruff_cache .mypy_cache htmlcov .coverage coverage.xml build dist *.egg-info
-

@@ -33,10 +33,6 @@ jobs:
           uv run ansible-playbook --syntax-check -i ansible/inventories/example/hosts.ini ansible/playbooks/collect.yml
       - name: ansible-lint
         run: uv run ansible-lint ansible/playbooks ansible/roles
-      - name: Hadolint
-        uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: Containerfile
       - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:

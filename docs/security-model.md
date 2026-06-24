@@ -6,5 +6,4 @@ Allowed checks include Ansible fact gathering, `uname`, `uptime`, `free`, `df`, 
 
 `apt-get update` is disabled by default and must be explicitly enabled in inventory variables.
 
-FleetLens does not store secrets in the repository. Keep `.env`, private inventories, SSH keys, notification URLs, and compose service data local and ignored.
-
+FleetLens does not store secrets in the repository. Keep `.env`, private inventories, SSH keys, and notification URLs local and ignored.

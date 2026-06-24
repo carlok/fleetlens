@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+source "$(dirname "${BASH_SOURCE[0]}")/load-env.sh"
+fleetlens_load_env
+
 mkdir -p reports logs
 export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-ansible/ansible.cfg}"
 export ANSIBLE_HOME="${ANSIBLE_HOME:-/tmp/fleetlens-ansible}"

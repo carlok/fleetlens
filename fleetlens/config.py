@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 DEFAULT_INVENTORY = "ansible/inventories/example/hosts.ini"
 DEFAULT_RAW_REPORT = "reports/raw-ansible.json"
@@ -20,6 +21,21 @@ def env_bool(name: str, default: bool = False) -> bool:
 def env_list(name: str) -> list[str]:
     value = os.getenv(name, "")
     return [item.strip() for item in value.replace(";", ",").split(",") if item.strip()]
+
+
+def load_env_file(path: str | os.PathLike[str] | None = None) -> None:
+    env_path = Path(path or os.getenv("FLEETLENS_ENV_FILE", ".env"))
+    if not env_path.exists():
+        return
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip("'\"")
+        if key:
+            os.environ.setdefault(key, value)
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +66,7 @@ class Settings:
 
 
 def load_settings() -> Settings:
+    load_env_file()
     return Settings(
         inventory=os.getenv("FLEETLENS_INVENTORY", DEFAULT_INVENTORY),
         raw_report=os.getenv("FLEETLENS_RAW_REPORT", DEFAULT_RAW_REPORT),

@@ -10,7 +10,7 @@ Description=FleetLens VM healthcheck
 Type=oneshot
 WorkingDirectory=/opt/fleetlens
 EnvironmentFile=/opt/fleetlens/.env
-ExecStart=/opt/fleetlens/scripts/run-check.sh
+ExecStart=/opt/fleetlens/.venv/bin/python -m fleetlens.cli run
 ```
 
 Timer:
@@ -27,5 +27,4 @@ Persistent=true
 WantedBy=timers.target
 ```
 
-The service can also run the documented `podman run` command. Keep SSH key paths and volume labels explicit.
-
+The service user must be able to read the configured SSH private key and `known_hosts` file. Use absolute paths in inventory files when the service runs outside an interactive shell.

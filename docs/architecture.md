@@ -8,7 +8,7 @@ Ansible collector -> raw JSON -> Python renderer -> Markdown/JSON -> notificatio
 
 Ansible owns SSH, sudo, fact gathering, and safe host commands. Python owns parsing, classification, report rendering, notifications, and heartbeat pings.
 
-The Podman image is a dependency runtime. The repository is bind-mounted into `/workspace` for fast iteration, so code and playbook edits are immediately visible inside the container.
+FleetLens runs from a local Python virtual environment on the scheduler host. This keeps SSH behavior familiar: the same user, keys, `known_hosts`, DNS, firewall rules, and cron/systemd environment determine what FleetLens can reach.
 
 ## Optional LLM Summarizer
 
@@ -19,4 +19,3 @@ Ansible collector -> JSON report -> Python renderer -> optional LLM summary -> e
 ```
 
 The LLM receives only structured reports. It never receives SSH access, never executes sudo commands, never remediates hosts, and only produces human-readable recommendations.
-

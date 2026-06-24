@@ -1,90 +1,137 @@
 # FleetLens
 
-Agentless VM health reports with Ansible, Podman, Python, and email.
+Agentless VM health reports with Ansible, Python, local SSH, and optional email.
 
 FleetLens checks a small Debian/Ubuntu-like VM fleet over SSH. Ansible performs deterministic read-only collection, Python renders JSON/Markdown reports, and optional SMTP notifications send the result.
 
 ## Architecture
 
 ```text
-cron/systemd timer
+cron/systemd/manual shell
         |
         v
-Podman container with dependencies
-        |
-        v
-bind-mounted FleetLens source in /workspace
+local Python virtual environment
         |
         v
 Ansible collector -> raw JSON -> Python renderer -> JSON, Markdown, email
 ```
 
-The image contains dependencies only. The repository is mounted into `/workspace`, so normal source, playbook, test, and documentation edits do not require rebuilding the image. Rebuild only when dependencies or the `Containerfile` change.
+FleetLens is host-native. It uses the SSH keys, `known_hosts`, network access, and scheduler environment of the user that runs it.
 
-## Quick Start
+## Requirements
+
+- macOS or Ubuntu
+- Python 3.11, 3.12, or 3.13
+- `python3-venv` on Ubuntu
+- OpenSSH client
+- SSH access to the target VMs
+
+Ansible currently fails in this project under the local Python 3.14 runtime, so use Python 3.11-3.13 for the virtual environment.
+
+## Install
+
+macOS with Homebrew:
+
+```bash
+brew install python@3.11
+PYTHON=python3.11 ./scripts/bootstrap.sh
+source .venv/bin/activate
+```
+
+Ubuntu:
+
+```bash
+sudo apt update
+sudo apt install -y python3 python3-venv python3-pip openssh-client
+./scripts/bootstrap.sh
+source .venv/bin/activate
+```
+
+Contributor shortcut with `uv`:
+
+```bash
+uv sync --group dev --locked
+```
+
+## Configure
+
+Create local config files:
 
 ```bash
 cp .env.example .env
-podman build -t fleetlens:local .
-podman run --rm \
-  -v "$PWD:/workspace:Z" \
-  -v "$HOME/.ssh:/home/runner/.ssh:ro,Z" \
-  --env-file .env \
-  fleetlens:local \
-  ./scripts/run-ping.sh
+mkdir -p ansible/inventories/local
+cp ansible/inventories/example/hosts.ini ansible/inventories/local/hosts.ini
 ```
 
-Edit `ansible/inventories/example/hosts.ini` or copy it to an ignored local inventory directory and set `FLEETLENS_INVENTORY`.
+Edit `.env`:
 
-For container runs, inventory SSH paths must match the container mount, for example
-`/home/runner/.ssh/<key>` and `/home/runner/.ssh/known_hosts` when using the
-command above.
+```text
+FLEETLENS_INVENTORY=ansible/inventories/local/hosts.ini
+```
 
-For direct host runs, use host paths in the inventory instead:
+Edit `ansible/inventories/local/hosts.ini`:
 
 ```ini
-myvm ansible_host=<ip> ansible_user=<user> ansible_port=<port> ansible_ssh_private_key_file=/Users/carlo/.ssh/<key> ansible_ssh_common_args='-o UserKnownHostsFile=/Users/carlo/.ssh/known_hosts'
-```
+[vms]
+myvm ansible_host=<ip-or-hostname> ansible_user=<user> ansible_port=<port> ansible_ssh_private_key_file=~/.ssh/<private_key_or_pem> ansible_ssh_common_args='-o UserKnownHostsFile=~/.ssh/known_hosts' ansible_python_interpreter=/usr/bin/python3
 
-Then run:
-
-```bash
-set -a
-source .env
-set +a
-uv run ./scripts/run-check.sh
-```
-
-The project pins local `uv` execution to Python 3.11. Ansible currently fails
-under the local Python 3.14 runtime.
-
-The example inventory starts in no-sudo mode:
-
-```ini
 [vms:vars]
 ansible_become=false
 ```
 
-That is enough for the first read-only checks when apt cache refresh and journal errors are disabled. Enable sudo later only if you need privileged checks.
-
-## Safety Model
-
-FleetLens does not remediate hosts. It gathers facts, checks apt metadata, inspects disk/memory/systemd/reboot indicators, and writes reports. `apt-get update` is disabled by default and controlled by Ansible variables.
-
-FleetLens does not disable SSH host key checking. Fix host keys on the host or mount a suitable `.ssh` directory into the container.
-
-## Common Commands
+If your daily SSH command is:
 
 ```bash
-make build
-make ping
-make run
-make test
-make lint
-make email-dry-run
+ssh -i "$HOME/.ssh/<key>" -p <port> <user>@<ip>
 ```
 
-Reports are written to `reports/latest.json` and `reports/latest.md`.
+then the matching inventory values are:
+
+```ini
+ansible_host=<ip>
+ansible_user=<user>
+ansible_port=<port>
+ansible_ssh_private_key_file=~/.ssh/<key>
+```
+
+FleetLens does not disable SSH host key checking. If needed, add the host key first:
+
+```bash
+ssh-keyscan -p <port> <ip-or-hostname> >> "$HOME/.ssh/known_hosts"
+```
+
+## Run
+
+With the virtual environment active:
+
+```bash
+./scripts/run-ping.sh
+./scripts/run-check.sh
+```
+
+The scripts load `.env` automatically. Use a different env file with:
+
+```bash
+FLEETLENS_ENV_FILE=/path/to/fleetlens.env ./scripts/run-check.sh
+```
+
+Reports are written to:
+
+```text
+reports/raw-ansible.json
+reports/latest.json
+reports/latest.md
+```
+
+The terminal output includes an actionable summary after the Ansible recap:
+
+```text
+FleetLens status: WARNING
+Attention needed:
+- myvm: WARNING
+  - updates available: 10 packages: openssl, curl, +8 more
+  - failed systemd units: 1 unit
+```
 
 ## Email
 
@@ -94,27 +141,39 @@ SMTP is the default notification backend. Configure `.env` from `.env.example`, 
 python -m fleetlens.cli email --dry-run
 ```
 
-Optional Apprise notifications are supported through environment variables but are disabled by default.
+Enable email:
+
+```text
+FLEETLENS_EMAIL_ENABLED=true
+FLEETLENS_EMAIL_SMTP_HOST=smtp.example.com
+FLEETLENS_EMAIL_SMTP_PORT=587
+FLEETLENS_EMAIL_SMTP_USERNAME=
+FLEETLENS_EMAIL_SMTP_PASSWORD=
+FLEETLENS_EMAIL_FROM=fleetlens@example.com
+FLEETLENS_EMAIL_TO=admin@example.com
+```
+
+FleetLens prints a `message_id=...` after SMTP submission so delayed mail can be traced in provider logs.
 
 ## Scheduling
 
-Cron and systemd timer examples are in `docs/cron.md` and `docs/systemd-timer.md`. Use absolute paths and make sure SSH keys and environment variables are available to the scheduled process.
-
-## Optional Integrations
-
-ARA, Semaphore, Healthchecks-compatible heartbeat pings, ntfy, and Gotify are optional compose profiles. FleetLens works without starting any optional service.
+Cron and systemd timer examples are in `docs/cron.md` and `docs/systemd-timer.md`. Use absolute paths and make sure the scheduled user can read `.env`, the inventory, and SSH keys.
 
 ## Testing
 
-Tests do not require real SSH hosts:
+With the virtual environment active:
 
 ```bash
 python -m pytest
 python -m coverage run -m pytest
 python -m coverage report
 python -m ruff check .
+ansible-playbook --syntax-check -i ansible/inventories/example/hosts.ini ansible/playbooks/collect.yml
+ansible-lint ansible/playbooks ansible/roles
 ```
 
-## Roadmap
+## Safety Model
 
-Future versions may add a read-only LLM summarizer that receives only structured reports, never SSH credentials, and never executes remediation.
+FleetLens does not remediate hosts. It gathers facts, checks apt metadata, inspects disk/memory/systemd/reboot indicators, and writes reports. `apt-get update` is disabled by default and controlled by Ansible variables.
+
+The example inventory starts in no-sudo mode. Enable sudo later only if you need privileged checks.

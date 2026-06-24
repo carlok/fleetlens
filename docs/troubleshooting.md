@@ -2,37 +2,50 @@
 
 ## SSH Permission Denied
 
-Confirm the mounted key is readable by the container user and the public key is installed on the VM.
+Confirm the same tuple works by hand from the scheduler host:
+
+```bash
+ssh -i "$HOME/.ssh/<key>" -p <port> <user>@<host>
+```
+
+Then mirror those values in the inventory:
+
+```ini
+ansible_host=<host>
+ansible_user=<user>
+ansible_port=<port>
+ansible_ssh_private_key_file=~/.ssh/<key>
+```
+
+If FleetLens is run by cron or systemd, test as that same user. SSH agents and macOS Keychain prompts are usually unavailable in non-interactive schedules, so use a key that can be used unattended by that scheduler user.
 
 ## Host Key Errors
 
-FleetLens does not disable host key checking. Update `known_hosts` on the host and mount the `.ssh` directory read-only.
-
-If the container reports `Host key verification failed`, verify that the host and port used in the inventory match an entry in the mounted `known_hosts` file. For non-standard SSH ports, OpenSSH stores entries in bracket form:
-
-```text
-[example.com]:2222 ssh-ed25519 ...
-```
-
-You can add the key on the host before running FleetLens:
+FleetLens does not disable host key checking. Add the host key before scheduling:
 
 ```bash
 ssh-keyscan -p <port> <host> >> "$HOME/.ssh/known_hosts"
 ```
 
-Do not disable host key checking just to make the first run pass.
+For non-standard SSH ports, OpenSSH stores entries in bracket form:
 
-## Bind-Mounted Workspace Permissions
+```text
+[example.com]:2222 ssh-ed25519 ...
+```
 
-FleetLens uses `/tmp/fleetlens-ansible` for Ansible controller temp files so the container does not need to write temp state into `/workspace/.ansible`.
+## Python Interpreter Warning
 
-The container runs as root inside rootless Podman so bind-mounted repo output and read-only SSH keys work with normal host file permissions. Rootless Podman maps that container root back to the invoking user outside the VM.
+If Ansible warns that it discovered `/usr/bin/python3.12` or another remote Python path, pin the interpreter in inventory:
+
+```ini
+ansible_python_interpreter=/usr/bin/python3
+```
 
 ## Sudo Fails
 
 The default example inventory is no-sudo. If you enabled `ansible_become=true`, disable it again for a first read-only test.
 
-Run the ping playbook first, then test a single host interactively with Ansible. If sudo prompts for a password, cron runs will fail unless configured deliberately.
+Run the ping playbook first, then test a single host interactively with Ansible. If sudo prompts for a password, cron or systemd runs will fail unless configured deliberately.
 
 ## Reports Are Missing
 
@@ -42,6 +55,6 @@ Check `reports/raw-ansible.json`, then run:
 python -m fleetlens.cli render
 ```
 
-## Source Edits Do Not Appear
+## Email Is Delayed
 
-Make sure the repository is mounted as `.:/workspace:Z`. Rebuild the image only for dependency changes.
+FleetLens prints a `message_id=...` after SMTP submission. Use that ID, the recipient, and the timestamp to search your SMTP provider logs. SMTP acceptance means the provider accepted the message; it does not guarantee immediate inbox delivery.

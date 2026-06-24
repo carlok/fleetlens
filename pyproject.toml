@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fleetlens"
 version = "0.1.0"
-description = "Agentless VM health reports with Ansible, Podman, Python, and email."
+description = "Agentless VM health reports with Ansible, Python, local SSH, and email."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
