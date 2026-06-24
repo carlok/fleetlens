@@ -66,5 +66,6 @@ def test_cli_email_dry_run(tmp_path, capsys):
             "--dry-run",
         ]
     ) == 0
-    assert "DRY RUN" in capsys.readouterr().out
-
+    output = capsys.readouterr().out
+    assert "DRY RUN" in output
+    assert "message_id=" in output

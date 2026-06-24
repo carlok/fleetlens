@@ -22,6 +22,12 @@ def test_should_send_honors_enabled_flag():
 
 
 def test_build_message_has_recipients():
-    message = build_message(report(), Settings(email_to=("a@example.com", "b@example.com")), "body")
+    message = build_message(
+        report(),
+        Settings(email_from="fleetlens@example.com", email_to=("a@example.com", "b@example.com")),
+        "body",
+    )
     assert message["To"] == "a@example.com, b@example.com"
+    assert message["Date"]
+    assert message["Message-ID"].endswith("@example.com>")
     assert message.get_content().strip() == "body"

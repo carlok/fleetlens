@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import smtplib
 from email.message import EmailMessage
+from email.utils import formatdate, make_msgid
 from pathlib import Path
 
 from fleetlens.config import Settings
@@ -60,6 +61,8 @@ def build_message(
     message["Subject"] = build_subject(report, settings)
     message["From"] = settings.email_from
     message["To"] = ", ".join(settings.email_to)
+    message["Date"] = formatdate(localtime=True)
+    message["Message-ID"] = make_msgid(domain=settings.email_from.rsplit("@", 1)[-1])
     message.set_content(body)
     for path in [markdown_path, json_path]:
         if path:

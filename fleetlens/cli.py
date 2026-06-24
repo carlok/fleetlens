@@ -64,10 +64,13 @@ def email_command(args: argparse.Namespace, settings) -> None:
         body = render_markdown(report)
     message = build_message(report, settings, body, markdown_path, json_path)
     if args.dry_run:
-        print(f"DRY RUN: to={', '.join(settings.email_to)} subject={message['Subject']}")
+        print(
+            f"DRY RUN: to={', '.join(settings.email_to)} "
+            f"subject={message['Subject']} message_id={message['Message-ID']}"
+        )
         return
     send_message(message, settings)
-    print(f"sent email to {', '.join(settings.email_to)}")
+    print(f"submitted email to {', '.join(settings.email_to)} message_id={message['Message-ID']}")
 
 
 def run_command(settings) -> None:
