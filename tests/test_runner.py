@@ -10,6 +10,9 @@ def test_shell_runner_invokes_ansible(monkeypatch):
     def fake_run(command, check, env):
         calls.append((command, check, env))
 
+    monkeypatch.delenv("ANSIBLE_CONFIG", raising=False)
+    monkeypatch.delenv("ANSIBLE_HOME", raising=False)
+    monkeypatch.delenv("ANSIBLE_LOCAL_TEMP", raising=False)
     monkeypatch.setattr("fleetlens.runner.subprocess.run", fake_run)
     run_ansible_collection(Settings(inventory="hosts.ini"))
     command, check, env = calls[0]
