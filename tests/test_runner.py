@@ -13,6 +13,7 @@ def test_shell_runner_invokes_ansible(monkeypatch):
     monkeypatch.delenv("ANSIBLE_CONFIG", raising=False)
     monkeypatch.delenv("ANSIBLE_HOME", raising=False)
     monkeypatch.delenv("ANSIBLE_LOCAL_TEMP", raising=False)
+    monkeypatch.delenv("ANSIBLE_SSH_CONTROL_PATH_DIR", raising=False)
     monkeypatch.setattr("fleetlens.runner.subprocess.run", fake_run)
     run_ansible_collection(Settings(inventory="hosts.ini"))
     command, check, env = calls[0]
@@ -26,6 +27,7 @@ def test_shell_runner_invokes_ansible(monkeypatch):
     assert env["ANSIBLE_CONFIG"] == "ansible/ansible.cfg"
     assert env["ANSIBLE_HOME"] == "/tmp/fleetlens-ansible"
     assert env["ANSIBLE_LOCAL_TEMP"] == "/tmp/fleetlens-ansible/tmp"
+    assert env["ANSIBLE_SSH_CONTROL_PATH_DIR"] == "/tmp/fleetlens-ansible/cp"
 
 
 def test_unknown_runner_backend_raises():

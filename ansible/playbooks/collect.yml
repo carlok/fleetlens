@@ -8,6 +8,7 @@
 
 - name: Write FleetLens raw report
   hosts: localhost
+  connection: local
   gather_facts: false
   vars:
     fleetlens_raw_report_path: "{{ lookup('env', 'FLEETLENS_RAW_REPORT') | default('reports/raw-ansible.json', true) }}"

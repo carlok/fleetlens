@@ -5,7 +5,8 @@ mkdir -p reports logs
 export ANSIBLE_CONFIG="${ANSIBLE_CONFIG:-ansible/ansible.cfg}"
 export ANSIBLE_HOME="${ANSIBLE_HOME:-/tmp/fleetlens-ansible}"
 export ANSIBLE_LOCAL_TEMP="${ANSIBLE_LOCAL_TEMP:-/tmp/fleetlens-ansible/tmp}"
-mkdir -p "${ANSIBLE_HOME}" "${ANSIBLE_LOCAL_TEMP}"
+export ANSIBLE_SSH_CONTROL_PATH_DIR="${ANSIBLE_SSH_CONTROL_PATH_DIR:-/tmp/fleetlens-ansible/cp}"
+mkdir -p "${ANSIBLE_HOME}" "${ANSIBLE_LOCAL_TEMP}" "${ANSIBLE_SSH_CONTROL_PATH_DIR}"
 
 ansible-playbook \
   -i "${FLEETLENS_INVENTORY:-ansible/inventories/example/hosts.ini}" \

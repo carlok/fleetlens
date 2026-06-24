@@ -36,6 +36,28 @@ podman run --rm \
 
 Edit `ansible/inventories/example/hosts.ini` or copy it to an ignored local inventory directory and set `FLEETLENS_INVENTORY`.
 
+For container runs, inventory SSH paths must match the container mount, for example
+`/home/runner/.ssh/<key>` and `/home/runner/.ssh/known_hosts` when using the
+command above.
+
+For direct host runs, use host paths in the inventory instead:
+
+```ini
+myvm ansible_host=<ip> ansible_user=<user> ansible_port=<port> ansible_ssh_private_key_file=/Users/carlo/.ssh/<key> ansible_ssh_common_args='-o UserKnownHostsFile=/Users/carlo/.ssh/known_hosts'
+```
+
+Then run:
+
+```bash
+set -a
+source .env
+set +a
+uv run ./scripts/run-check.sh
+```
+
+The project pins local `uv` execution to Python 3.11. Ansible currently fails
+under the local Python 3.14 runtime.
+
 The example inventory starts in no-sudo mode:
 
 ```ini

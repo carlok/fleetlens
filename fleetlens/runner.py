@@ -13,6 +13,7 @@ def run_ansible_collection(settings: Settings) -> None:
         env.setdefault("ANSIBLE_CONFIG", "ansible/ansible.cfg")
         env.setdefault("ANSIBLE_HOME", "/tmp/fleetlens-ansible")
         env.setdefault("ANSIBLE_LOCAL_TEMP", "/tmp/fleetlens-ansible/tmp")
+        env.setdefault("ANSIBLE_SSH_CONTROL_PATH_DIR", "/tmp/fleetlens-ansible/cp")
         subprocess.run(
             [
                 "ansible-playbook",
