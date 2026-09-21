@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from fleetlens.models import FleetReport, HostResult
+from fleetlens.models import FleetReport, HostResult, normalize_status
 
 
 def write_json_report(report: FleetReport, path: str | Path) -> None:
@@ -86,12 +86,14 @@ def _host_terminal_findings(host: HostResult) -> list[str]:
         )
 
     for filesystem in host.disk.get("filesystems", []):
-        status = str(filesystem.get("status", "")).upper()
+        status = normalize_status(filesystem.get("status"))
         if status not in {"WARNING", "CRITICAL"}:
             continue
         mount = filesystem.get("mount", filesystem.get("filesystem", "disk"))
         used = filesystem.get("used_percent", "unknown")
         findings.append(f"{mount} disk {status.lower()}: {used}% used")
+
+    findings.extend(note for note in host.notes if " check failed " in note)
 
     if not findings and host.notes:
         findings.extend(host.notes)
@@ -134,6 +136,7 @@ def _host_detail(host: HostResult) -> list[str]:
         lines.append("- Package updates:")
         for package in packages:
             lines.append(f"  - `{package}`")
+    lines.extend(_needrestart_detail(host))
     lines.append("- Disk:")
     filesystems = host.disk.get("filesystems") or []
     if not filesystems:
@@ -141,7 +144,7 @@ def _host_detail(host: HostResult) -> list[str]:
     for filesystem in filesystems:
         mount = filesystem.get("mount", filesystem.get("filesystem", "unknown"))
         used = filesystem.get("used_percent", "unknown")
-        status = filesystem.get("status", "UNKNOWN")
+        status = normalize_status(filesystem.get("status")) or "UNKNOWN"
         lines.append(f"  - `{mount}`: {used}% {status}")
     if host.errors:
         lines.append(f"- Errors: {', '.join(host.errors)}")
@@ -149,11 +152,36 @@ def _host_detail(host: HostResult) -> list[str]:
     return lines
 
 
+def _needrestart_detail(host: HostResult) -> list[str]:
+    """Summarise `needrestart -b` output. Informational only: it does not affect status."""
+    if not host.needrestart.get("needrestart_installed"):
+        return []
+    services = []
+    kernel_status = None
+    for line in str(host.needrestart.get("needrestart_output") or "").splitlines():
+        key, _, value = line.partition(":")
+        if key.strip() == "NEEDRESTART-SVC":
+            services.append(value.strip())
+        elif key.strip() == "NEEDRESTART-KSTA":
+            kernel_status = value.strip()
+    lines = [f"- Services needing restart: {len(services)}"]
+    lines.extend(f"  - `{service}`" for service in services)
+    kernel_text = NEEDRESTART_KERNEL_STATUS.get(kernel_status or "")
+    if kernel_text:
+        lines.append(f"- Pending kernel: {kernel_text}")
+    return lines
+
+
+# NEEDRESTART-KSTA values documented in needrestart's batch mode.
+NEEDRESTART_KERNEL_STATUS = {
+    "1": "running the latest installed kernel",
+    "2": "ABI-compatible kernel upgrade pending",
+    "3": "kernel version upgrade pending",
+}
+
+
 def _disk_summary(host: HostResult) -> str:
-    statuses = {
-        str(item.get("status", "UNKNOWN")).upper()
-        for item in host.disk.get("filesystems", [])
-    }
+    statuses = {normalize_status(item.get("status")) for item in host.disk.get("filesystems", [])}
     if "CRITICAL" in statuses:
         return "critical"
     if "WARNING" in statuses:

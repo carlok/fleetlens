@@ -11,8 +11,10 @@ from fleetlens.models import FleetReport, Status
 
 
 def should_send(report: FleetReport, settings: Settings) -> bool:
-    if not settings.email_enabled:
-        return False
+    return settings.email_enabled and status_wants_email(report, settings)
+
+
+def status_wants_email(report: FleetReport, settings: Settings) -> bool:
     return {
         Status.OK: settings.email_send_on_ok,
         Status.WARNING: settings.email_send_on_warning,
@@ -39,8 +41,6 @@ def load_report(path: str | Path) -> FleetReport:
 
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     hosts = [HostResult.from_mapping(item) for item in data.get("hosts", [])]
-    for host in hosts:
-        host.status = Status(data.get("status_by_host", {}).get(host.host, host.status.value))
     return FleetReport(
         status=Status(data["status"]),
         generated_at=data["generated_at"],

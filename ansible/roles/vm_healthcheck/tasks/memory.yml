@@ -22,5 +22,11 @@
     vm_healthcheck_memory:
       total_mb: "{{ ansible_memtotal_mb | default(0) }}"
       free_mb: "{{ ansible_memfree_mb | default(0) }}"
-      used_mb: "{{ (ansible_memtotal_mb | default(0) | int) - (ansible_memfree_mb | default(0) | int) }}"
+      # Excludes page cache and buffers, which the kernel reclaims on demand.
+      used_mb: >-
+        {{
+          ansible_memory_mb.nocache.used
+          if ansible_memory_mb.nocache.used is defined
+          else (ansible_memtotal_mb | default(0) | int) - (ansible_memfree_mb | default(0) | int)
+        }}
       raw: "{{ vm_healthcheck_free.stdout | default('') }}"

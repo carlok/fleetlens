@@ -12,6 +12,18 @@ class Status(StrEnum):
     UNKNOWN = "UNKNOWN"
 
 
+def normalize_status(value: Any) -> str:
+    """Return an upper-case status string, tolerating whitespace from Jinja templates."""
+    return str(value or "").strip().upper()
+
+
+def parse_status(value: Any) -> Status:
+    try:
+        return Status(normalize_status(value))
+    except ValueError:
+        return Status.UNKNOWN
+
+
 @dataclass(slots=True)
 class HostResult:
     host: str
@@ -29,6 +41,7 @@ class HostResult:
     reboot_required: bool | None = None
     systemd: dict[str, Any] = field(default_factory=dict)
     journal: dict[str, Any] = field(default_factory=dict)
+    needrestart: dict[str, Any] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     collected_at: str | None = None
@@ -39,6 +52,7 @@ class HostResult:
             host=str(value.get("host") or value.get("inventory_hostname") or "unknown"),
             reachable=bool(value.get("reachable", True)),
             sudo_ok=bool(value.get("sudo_ok", value.get("become_ok", True))),
+            status=parse_status(value.get("status")),
             hostname=value.get("hostname"),
             os=value.get("os"),
             kernel=value.get("kernel"),
@@ -50,6 +64,7 @@ class HostResult:
             reboot_required=value.get("reboot_required"),
             systemd=dict(value.get("systemd") or {}),
             journal=dict(value.get("journal") or {}),
+            needrestart=dict(value.get("needrestart") or {}),
             notes=list(value.get("notes") or []),
             errors=list(value.get("errors") or []),
             collected_at=value.get("collected_at"),
@@ -72,6 +87,7 @@ class HostResult:
             "reboot_required": self.reboot_required,
             "systemd": self.systemd,
             "journal": self.journal,
+            "needrestart": self.needrestart,
             "notes": self.notes,
             "errors": self.errors,
             "collected_at": self.collected_at,

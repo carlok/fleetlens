@@ -18,14 +18,21 @@
         if fleetlens_raw_report_path.startswith('/')
         else (playbook_dir ~ '/../..' ~ '/' ~ fleetlens_raw_report_path)
       }}
-    fleetlens_hosts: >-
-      {{
-        groups.get('vms', [])
-        | map('extract', hostvars, 'vm_healthcheck_result')
-        | select('defined')
-        | list
-      }}
+    fleetlens_target_hosts: >-
+      {{ groups.get('vms', []) | intersect(query('inventory_hostnames', ansible_limit | default('all'))) }}
   tasks:
+    # A host whose collection aborted early sets no result; report it instead of dropping it.
+    - name: Collect host results
+      ansible.builtin.set_fact:
+        fleetlens_hosts: >-
+          {{
+            fleetlens_hosts | default([])
+            + [hostvars[item].vm_healthcheck_result
+               if hostvars[item].vm_healthcheck_result is defined
+               else {'host': item, 'reachable': false, 'errors': ['no result collected']}]
+          }}
+      loop: "{{ fleetlens_target_hosts }}"
+
     - name: Ensure report directory exists
       ansible.builtin.file:
         path: "{{ fleetlens_raw_report_abs | dirname }}"
@@ -36,4 +43,4 @@
       ansible.builtin.copy:
         dest: "{{ fleetlens_raw_report_abs }}"
         mode: "0644"
-        content: "{{ {'hosts': fleetlens_hosts} | to_nice_json }}\n"
+        content: "{{ {'hosts': fleetlens_hosts | default([])} | to_nice_json }}\n"

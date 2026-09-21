@@ -19,8 +19,10 @@
       used_percent: "{{ used_percent }}"
       mount: "{{ parts[5] }}"
       status: >-
-        {% if used_percent | int >= vm_healthcheck_disk_critical_percent | int %}CRITICAL
-        {% elif used_percent | int >= vm_healthcheck_disk_warning_percent | int %}WARNING
-        {% else %}OK{% endif %}
+        {{
+          'CRITICAL' if used_percent | int >= vm_healthcheck_disk_critical_percent | int
+          else 'WARNING' if used_percent | int >= vm_healthcheck_disk_warning_percent | int
+          else 'OK'
+        }}
   loop: "{{ vm_healthcheck_df.stdout_lines[1:] | default([]) }}"
   when: item.split() | length >= 6

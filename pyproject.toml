@@ -37,7 +37,7 @@ source = ["fleetlens"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 70
+fail_under = 85
 
 [tool.ruff]
 line-length = 100

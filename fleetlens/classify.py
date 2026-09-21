@@ -1,21 +1,32 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 
-from fleetlens.models import FleetReport, HostResult, Status
+from fleetlens.models import FleetReport, HostResult, Status, normalize_status
+
+# Collector sections whose command return code is recorded. A non-zero code on a
+# reachable host means the check could not run, so its "all clear" is not trustworthy:
+# report it as a warning rather than silently as OK.
+CHECK_RETURN_CODES = (
+    ("apt", "apt", "apt_list_rc"),
+    ("systemd", "systemd", "rc"),
+    ("journal", "journal", "rc"),
+)
 
 
 def classify_host(host: HostResult) -> HostResult:
     criticals: list[str] = []
     warnings: list[str] = []
 
-    if not host.reachable:
+    # The collector already records why a host is unreachable; only add a generic reason.
+    if not host.reachable and not host.errors:
         criticals.append("unreachable")
     if not host.sudo_ok:
         criticals.append("sudo failed")
 
     for filesystem in host.disk.get("filesystems", []):
-        status = str(filesystem.get("status", "")).upper()
+        status = normalize_status(filesystem.get("status"))
         mount = filesystem.get("mount", filesystem.get("filesystem", "disk"))
         if status == Status.CRITICAL:
             criticals.append(f"{mount} disk critical")
@@ -30,16 +41,28 @@ def classify_host(host: HostResult) -> HostResult:
         warnings.append("failed systemd units")
     if int(host.journal.get("error_count") or 0) > 0:
         warnings.append("journal errors")
+    if host.reachable:
+        warnings.extend(failed_check_notes(host))
 
     host.errors.extend(item for item in criticals if item not in host.errors)
     host.notes.extend(item for item in warnings if item not in host.notes)
-    if criticals:
+    # Errors and notes supplied by the collector count as much as the ones derived here.
+    if host.errors:
         host.status = Status.CRITICAL
-    elif warnings:
+    elif host.notes:
         host.status = Status.WARNING
     else:
         host.status = Status.OK
     return host
+
+
+def failed_check_notes(host: HostResult) -> list[str]:
+    notes = []
+    for label, section, key in CHECK_RETURN_CODES:
+        return_code = _int_or_none(getattr(host, section).get(key))
+        if return_code:
+            notes.append(f"{label} check failed (rc={return_code})")
+    return notes
 
 
 def classify_disk_usage(used_percent: int, warning: int = 85, critical: int = 95) -> Status:
@@ -81,6 +104,13 @@ def classify_fleet(hosts: list[HostResult]) -> FleetReport:
         warnings=warnings,
         criticals=criticals,
     )
+
+
+def _int_or_none(value: Any) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _now() -> str:

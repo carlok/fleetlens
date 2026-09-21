@@ -32,3 +32,12 @@ def test_heartbeat_uses_configured_urls(monkeypatch):
         ("https://hc/success", ""),
         ("https://hc/failure", "failed"),
     ]
+
+
+def test_ping_swallows_timeouts_and_bad_urls(monkeypatch):
+    def timeout(*args, **kwargs):
+        raise TimeoutError("read timed out")
+
+    monkeypatch.setattr("fleetlens.heartbeat.urlopen", timeout)
+    assert ping("https://hc/start") is False
+    assert ping("not a url") is False

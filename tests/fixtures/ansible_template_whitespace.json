@@ -1,0 +1,23 @@
+{
+  "hosts": [
+    {
+      "host": "vm1",
+      "reachable": true,
+      "sudo_ok": true,
+      "disk": {
+        "filesystems": [
+          {"mount": "/", "used_percent": 97, "status": "CRITICAL "},
+          {"mount": "/var", "used_percent": 88, "status": "WARNING\n"}
+        ]
+      },
+      "apt": {"upgradable_count": "0", "apt_list_rc": "0"},
+      "systemd": {"failed_count": "0", "rc": "0"},
+      "needrestart": {
+        "needrestart_installed": true,
+        "needrestart_output": "NEEDRESTART-VER: 3.6\nNEEDRESTART-KCUR: 6.8.0-40\nNEEDRESTART-KSTA: 3\nNEEDRESTART-SVC: nginx.service\nNEEDRESTART-SVC: ssh.service"
+      },
+      "notes": [],
+      "errors": []
+    }
+  ]
+}
