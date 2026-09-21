@@ -4,6 +4,7 @@
 # Extra arguments are passed through, e.g. ./scripts/run-check.sh --fail-on critical
 set -euo pipefail
 
+# shellcheck source=scripts/load-env.sh
 source "$(dirname "${BASH_SOURCE[0]}")/load-env.sh"
 fleetlens_load_env
 

@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   role_name: vm_healthcheck
-  author: FleetLens contributors
+  author: Carlo Perassi
   description: Safe VM health collection for FleetLens.
   license: MIT
   min_ansible_version: "2.15"

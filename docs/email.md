@@ -22,12 +22,18 @@ Dry-run:
 python -m fleetlens.cli email --dry-run
 ```
 
-Use send-on-status flags to avoid OK emails:
+Send-on-status flags decide which fleet statuses produce an email. The defaults skip OK runs:
 
 ```text
 FLEETLENS_EMAIL_SEND_ON_OK=false
 FLEETLENS_EMAIL_SEND_ON_WARNING=true
 FLEETLENS_EMAIL_SEND_ON_CRITICAL=true
+```
+
+An `UNKNOWN` fleet status (for example, no host results at all) always sends. Both `fleetlens run` and `fleetlens email` apply these flags; when a status is skipped, `email` prints `skipped email: ...`. Send regardless of status with:
+
+```bash
+python -m fleetlens.cli email --force
 ```
 
 Common failures are blocked SMTP ports, wrong TLS setting, invalid app password, and cron missing the expected `.env`.

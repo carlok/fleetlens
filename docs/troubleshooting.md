@@ -47,6 +47,14 @@ The default example inventory is no-sudo. If you enabled `ansible_become=true`, 
 
 Run the ping playbook first, then test a single host interactively with Ansible. If sudo prompts for a password, cron or systemd runs will fail unless configured deliberately.
 
+## A Host Shows "no result collected"
+
+The host was in the inventory but its collection stopped before producing a result, usually because fact gathering or a task failed outright (for example, a wrong `ansible_python_interpreter`). The Ansible output above the FleetLens summary shows the failing task. FleetLens still renders the other hosts; `ansible-playbook` exits with rc 2 or 4 in this case and FleetLens treats that as report data rather than a failed run.
+
+## A Check Shows "check failed (rc=N)"
+
+A collector command such as `apt list --upgradable`, `systemctl --failed`, or `journalctl` returned a non-zero exit code on a reachable host. FleetLens reports this as a WARNING because the check's "nothing found" result cannot be trusted. Run the command by hand as the collection user to see the error.
+
 ## Reports Are Missing
 
 Check `reports/raw-ansible.json`, then run:

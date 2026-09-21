@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# shellcheck source=scripts/load-env.sh
 source "$(dirname "${BASH_SOURCE[0]}")/load-env.sh"
 fleetlens_load_env
 
