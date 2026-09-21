@@ -74,3 +74,30 @@ def test_write_reports(tmp_path):
     write_markdown_report(report, markdown_path)
     assert json.loads(json_path.read_text())["status"] == "OK"
     assert markdown_path.read_text().startswith("# FleetLens Report")
+
+
+def test_render_reports_needrestart_and_failed_checks():
+    from pathlib import Path
+
+    from fleetlens.parse_ansible import load_raw_report
+
+    fixture = Path(__file__).parent / "fixtures" / "ansible_template_whitespace.json"
+    hosts = load_raw_report(fixture)
+    hosts[0].systemd["rc"] = 1
+    report = classify_fleet(hosts)
+
+    markdown = render_markdown(report)
+    assert "- Services needing restart: 2" in markdown
+    assert "  - `nginx.service`" in markdown
+    assert "- Pending kernel: kernel version upgrade pending" in markdown
+    assert "`/`: 97% CRITICAL" in markdown
+    assert "| critical |" in markdown
+
+    summary = render_terminal_summary(report)
+    assert "/ disk critical: 97% used" in summary
+    assert "systemd check failed (rc=1)" in summary
+
+
+def test_needrestart_not_installed_is_omitted():
+    report = classify_fleet([HostResult(host="vm1", needrestart={"needrestart_installed": False})])
+    assert "Services needing restart" not in render_markdown(report)

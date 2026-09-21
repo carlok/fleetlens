@@ -1,13 +1,30 @@
 [build-system]
-requires = ["setuptools>=69"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "fleetlens"
-version = "0.1.0"
-description = "Agentless VM health reports with Ansible, Python, local SSH, and email."
+version = "0.2.0"
+description = "Agentless, read-only health reports for small Debian/Ubuntu VM fleets, using Ansible over SSH."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Carlo Perassi" }]
+keywords = ["ansible", "healthcheck", "monitoring", "ssh", "debian", "ubuntu", "apt", "sre"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: System Administrators",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: System :: Monitoring",
+  "Topic :: System :: Systems Administration",
+]
 dependencies = [
   "ansible-core>=2.19,<2.22",
 ]
@@ -19,6 +36,14 @@ dev = [
   "pytest>=8",
   "ruff>=0.5",
 ]
+
+[project.urls]
+Homepage = "https://github.com/carlok/fleetlens"
+Issues = "https://github.com/carlok/fleetlens/issues"
+Changelog = "https://github.com/carlok/fleetlens/blob/main/CHANGELOG.md"
+
+[project.scripts]
+fleetlens = "fleetlens.cli:main"
 
 [project.optional-dependencies]
 runner = ["ansible-runner>=2.4"]
@@ -37,7 +62,7 @@ source = ["fleetlens"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 70
+fail_under = 85
 
 [tool.ruff]
 line-length = 100

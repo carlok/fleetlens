@@ -36,7 +36,7 @@
       reachable: "{{ not vm_healthcheck_host_unreachable }}"
       sudo_ok: true
       hostname: "{{ ansible_hostname | default(inventory_hostname) }}"
-      os: "{{ ansible_distribution | default('unknown') }} {{ ansible_distribution_version | default('') }}"
+      os: "{{ (ansible_distribution | default('unknown') ~ ' ' ~ ansible_distribution_version | default('')) | trim }}"
       kernel: "{{ ansible_kernel | default('unknown') }}"
       uptime: "{{ vm_healthcheck_uptime.stdout | default('unknown') }}"
       load_average: "{{ vm_healthcheck_load.stdout | default('unknown') }}"
@@ -44,7 +44,7 @@
       disk:
         filesystems: "{{ vm_healthcheck_disks | default([]) }}"
       apt: "{{ vm_healthcheck_apt | default({}) }}"
-      reboot_required: "{{ vm_healthcheck_reboot_required | default(false) }}"
+      reboot_required: "{{ None if vm_healthcheck_host_unreachable else vm_healthcheck_reboot_required | default(None) }}"
       systemd: "{{ vm_healthcheck_systemd | default({}) }}"
       journal: "{{ vm_healthcheck_journal | default({}) }}"
       needrestart: "{{ vm_healthcheck_needrestart | default({}) }}"

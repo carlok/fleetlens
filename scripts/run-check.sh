@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
+# Collect, render, and optionally email a FleetLens report.
+# Thin wrapper around `python -m fleetlens.cli run` so cron and systemd behave the same.
+# Extra arguments are passed through, e.g. ./scripts/run-check.sh --fail-on critical
 set -euo pipefail
 
+# shellcheck source=scripts/load-env.sh
 source "$(dirname "${BASH_SOURCE[0]}")/load-env.sh"
 fleetlens_load_env
 
@@ -11,17 +15,4 @@ export ANSIBLE_LOCAL_TEMP="${ANSIBLE_LOCAL_TEMP:-/tmp/fleetlens-ansible/tmp}"
 export ANSIBLE_SSH_CONTROL_PATH_DIR="${ANSIBLE_SSH_CONTROL_PATH_DIR:-/tmp/fleetlens-ansible/cp}"
 mkdir -p "${ANSIBLE_HOME}" "${ANSIBLE_LOCAL_TEMP}" "${ANSIBLE_SSH_CONTROL_PATH_DIR}"
 
-ansible-playbook \
-  -i "${FLEETLENS_INVENTORY:-ansible/inventories/example/hosts.ini}" \
-  ansible/playbooks/collect.yml
-
-python -m fleetlens.cli render \
-  --input "${FLEETLENS_RAW_REPORT:-reports/raw-ansible.json}" \
-  --json-out "${FLEETLENS_JSON_REPORT:-reports/latest.json}" \
-  --markdown-out "${FLEETLENS_MARKDOWN_REPORT:-reports/latest.md}"
-
-if [[ "${FLEETLENS_EMAIL_ENABLED:-false}" == "true" ]]; then
-  python -m fleetlens.cli email \
-    --markdown "${FLEETLENS_MARKDOWN_REPORT:-reports/latest.md}" \
-    --json "${FLEETLENS_JSON_REPORT:-reports/latest.json}"
-fi
+exec python -m fleetlens.cli run "$@"

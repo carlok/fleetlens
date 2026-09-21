@@ -31,3 +31,28 @@ def test_build_message_has_recipients():
     assert message["Date"]
     assert message["Message-ID"].endswith("@example.com>")
     assert message.get_content().strip() == "body"
+
+
+def test_should_send_honors_status_toggles():
+    settings = Settings(email_enabled=True)
+    assert should_send(report(Status.OK), settings) is False
+    assert should_send(report(Status.CRITICAL), settings) is True
+    assert should_send(report(Status.OK), Settings(email_enabled=True, email_send_on_ok=True))
+    quiet = Settings(email_enabled=True, email_send_on_warning=False)
+    assert should_send(report(Status.WARNING), quiet) is False
+
+
+def test_load_report_keeps_host_status(tmp_path):
+    import json
+
+    from fleetlens.emailer import load_report
+
+    path = tmp_path / "latest.json"
+    path.write_text(json.dumps(report(Status.WARNING).to_dict()), encoding="utf-8")
+    loaded = load_report(path)
+    assert loaded.status == Status.WARNING
+    assert loaded.hosts[0].status == Status.UNKNOWN  # report() host is never classified
+    classified = report(Status.WARNING)
+    classified.hosts[0].status = Status.WARNING
+    path.write_text(json.dumps(classified.to_dict()), encoding="utf-8")
+    assert load_report(path).hosts[0].status == Status.WARNING
