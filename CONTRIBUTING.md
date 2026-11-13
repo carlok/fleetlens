@@ -2,6 +2,8 @@
 
 Thanks for your interest. FleetLens is deliberately small: Ansible connects to machines and collects facts, and Python parses, classifies, renders, and notifies. Contributions that keep it predictable and auditable are welcome.
 
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to uphold it.
+
 ## Before you start
 
 For anything bigger than a small fix, open an issue first. The project deliberately does **not** take:
