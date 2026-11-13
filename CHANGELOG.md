@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Added
+
+- `AGENT.md` for coding agents, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1),
+  and `.editorconfig` for consistent formatting.
+
+### Changed
+
+- `CONTRIBUTING.md` links to the code of conduct.
+
 ## 0.2.0 - 2026-09-21
 
 ### Fixed
