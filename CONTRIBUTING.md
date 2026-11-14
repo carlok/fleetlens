@@ -4,6 +4,10 @@ Thanks for your interest. FleetLens is deliberately small: Ansible connects to m
 
 This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to uphold it.
 
+## Security vulnerabilities
+
+Do **not** file a public issue for security vulnerabilities. Follow [SECURITY.md](SECURITY.md) to report them privately.
+
 ## Before you start
 
 For anything bigger than a small fix, open an issue first. The project deliberately does **not** take:

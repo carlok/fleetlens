@@ -4,6 +4,8 @@ about: Something FleetLens reports wrongly or fails to do
 labels: bug
 ---
 
+> For security vulnerabilities, use [SECURITY.md](../../SECURITY.md) — do not report them here.
+
 **What happened**
 
 **What you expected**

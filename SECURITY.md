@@ -6,9 +6,9 @@ Only the latest release receives fixes.
 
 ## Reporting a vulnerability
 
-Please do **not** open a public issue for security problems.
+Please do **not** open a public GitHub issue for security problems.
 
-Report privately through GitHub's [private vulnerability reporting](https://github.com/carlok/fleetlens/security/advisories/new). Include the affected version, a description, and reproduction steps if you have them. You should get an acknowledgement within a week.
+Report privately using GitHub [private vulnerability reporting](https://github.com/carlok/fleetlens/security/advisories/new) (repository **Security** tab → **Report a vulnerability**). Include the affected version, a description, and reproduction steps if you can. You should get an acknowledgement within a week.
 
 ## Scope
 
