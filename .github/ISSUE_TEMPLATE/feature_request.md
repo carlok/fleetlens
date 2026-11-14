@@ -4,6 +4,8 @@ about: Suggest a new read-only check or improvement
 labels: enhancement
 ---
 
+> Security vulnerabilities are out of scope for this template — see [SECURITY.md](../../SECURITY.md).
+
 **Problem**
 
 What do you need to see in the report that you can't today?
